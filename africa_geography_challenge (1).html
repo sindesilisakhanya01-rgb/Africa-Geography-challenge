@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Africa Geography Challenge</title>
+<style>
+:root{--ink:#18324b;--blue:#126782;--teal:#138a83;--gold:#f2b84b;--paper:#f5f8fb;--white:#fff;--muted:#607387;--red:#b84c4c}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(140deg,#e7f4f5,#f8f5e9);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:#123b55;color:white;padding:24px 18px;text-align:center} header h1{margin:0;font-size:clamp(1.7rem,5vw,2.6rem)} header p{margin:8px auto 0;max-width:760px;color:#e4f3f7}
+main{max-width:960px;margin:22px auto;padding:0 14px 40px} .panel{background:white;border-radius:18px;padding:20px;box-shadow:0 8px 24px #163b5515;margin-bottom:16px}
+.stats{display:flex;gap:10px;flex-wrap:wrap} .stat{background:#edf6f7;padding:10px 14px;border-radius:12px;font-weight:700} .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+button,select{font:inherit} button{border:0;border-radius:12px;padding:11px 15px;background:var(--blue);color:white;font-weight:700;cursor:pointer} button:hover{filter:brightness(1.08)} button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.secondary{background:#e7eff4;color:var(--ink)} button.gold{background:var(--gold);color:#24384a} button:disabled{opacity:.5;cursor:not-allowed}
+#question{font-size:1.22rem;font-weight:750;line-height:1.45;margin:10px 0 16px} .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px} .choices button{background:#eef5f7;color:var(--ink);border:2px solid #d7e5eb;text-align:left;min-height:54px} .choices button.correct{background:#dff4e8;border-color:#2b9960} .choices button.wrong{background:#ffebeb;border-color:#cc6666}
+.feedback{min-height:48px;margin-top:14px;padding:12px;border-radius:12px;background:#f2f6f8;color:var(--ink)} .mapbox{background:#eaf3f4;border-radius:14px;padding:15px;margin:12px 0} .world{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center} .world div{padding:12px 6px;background:white;border-radius:10px;font-weight:700} .world .africa{background:#ffe7ae;border:2px solid #d69b26} .small{font-size:.92rem;color:var(--muted)} .bar{height:10px;background:#e4edf1;border-radius:10px;overflow:hidden;margin:12px 0} .bar span{display:block;height:100%;background:var(--teal);width:0;transition:width .2s} .hide{display:none!important} .country-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px} .country{padding:9px 10px;border-radius:10px;background:#f1f6f8;display:flex;justify-content:space-between;gap:6px} .pill{font-size:.78rem;background:#dcecef;border-radius:99px;padding:3px 7px;white-space:nowrap} footer{text-align:center;color:var(--muted);padding:5px 10px 24px;font-size:.85rem}
+</style></head>
+<body>
+<header><h1>🌍 Africa Geography Challenge</h1><p>Explore Africa’s position, oceans, borders and all 54 countries. Learn by playing!</p></header>
+<main>
+<section class="panel">
+<div class="stats"><div class="stat">⭐ Score: <span id="score">0</span></div><div class="stat">Question: <span id="progress">0</span></div><div class="stat">🏅 Best: <span id="best">0</span></div></div>
+<div class="bar"><span id="bar"></span></div>
+<div class="tabs">
+<button onclick="start('mixed')">Mixed challenge</button><button class="secondary" onclick="start('regions')">All 54 countries</button><button class="secondary" onclick="start('oceans')">Oceans & position</button><button class="secondary" onclick="start('coast')">Coastline & landlocked</button><button class="secondary" onclick="start('equator')">Equator & islands</button>
+</div>
+<p class="small">Choose a round above. Each question has four choices. You can replay any round.</p>
+<div class="mapbox">
+<strong>🌐 Remember Africa’s position</strong>
+<div class="world" aria-label="Schematic world position diagram">
+<div>Europe</div><div>Asia</div><div>Asia</div>
+<div>Atlantic Ocean</div><div class="africa">AFRICA</div><div>Indian Ocean</div>
+<div>South America</div><div>Equator crosses central Africa</div><div>Australia</div>
+</div>
+<p class="small">Africa is south of Europe, west of the Indian Ocean and east of the Atlantic Ocean. The Mediterranean Sea is to its north; the Red Sea is to its northeast. The Equator crosses central Africa.</p>
+</div>
+<div id="game">
+<div id="question">Choose a round to begin.</div>
+<div id="choices" class="choices"></div>
+<div id="feedback" class="feedback" aria-live="polite">Your feedback will appear here.</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="next" class="gold hide" onclick="nextQ()">Next question →</button><button class="secondary" onclick="showCountries()">View all 54 countries</button></div>
+</div>
+</section>
+<section id="directory" class="panel hide"><h2>All 54 African countries</h2><p class="small">Grouped by region. Use this study list to revise where each country is located.</p><div id="countrylist"></div></section>
+<section class="panel"><h2>Key geography ideas</h2><ul>
+<li><b>Country:</b> an area of land with its own government.</li><li><b>Border:</b> a line or boundary separating one country from another.</li>
+<li><b>Coastline:</b> the edge where land meets the sea or ocean. A landlocked country has no coastline.</li>
+<li><b>Island:</b> land surrounded by water. Madagascar is both a country and a large island.</li>
+<li><b>Zanzibar:</b> an island group that forms part of Tanzania; it is not a separate country.</li>
+</ul></section>
+</main><footer>Made for classroom learning • Africa Geography Challenge</footer>
+<script>
+const countries=[{"name": "Algeria", "region": "North Africa", "coast": true, "equator": false, "island": false}, {"name": "Egypt", "region": "North Africa", "coast": true, "equator": false, "island": false}, {"name": "Libya", "region": "North Africa", "coast": true, "equator": false, "island": false}, {"name": "Morocco", "region": "North Africa", "coast": true, "equator": false, "island": false}, {"name": "Sudan", "region": "North Africa", "coast": true, "equator": false, "island": false}, {"name": "Tunisia", "region": "North Africa", "coast": true, "equator": false, "island": false}, {"name": "Benin", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Burkina Faso", "region": "West Africa", "coast": false, "equator": false, "island": false}, {"name": "Cabo Verde", "region": "West Africa", "coast": true, "equator": false, "island": true}, {"name": "Côte d’Ivoire", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "The Gambia", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Ghana", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Guinea", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Guinea-Bissau", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Liberia", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Mali", "region": "West Africa", "coast": false, "equator": false, "island": false}, {"name": "Mauritania", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Niger", "region": "West Africa", "coast": false, "equator": false, "island": false}, {"name": "Nigeria", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Senegal", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Sierra Leone", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Togo", "region": "West Africa", "coast": true, "equator": false, "island": false}, {"name": "Angola", "region": "Central Africa", "coast": true, "equator": false, "island": false}, {"name": "Cameroon", "region": "Central Africa", "coast": true, "equator": false, "island": false}, {"name": "Central African Republic", "region": "Central Africa", "coast": false, "equator": false, "island": false}, {"name": "Chad", "region": "Central Africa", "coast": false, "equator": false, "island": false}, {"name": "Democratic Republic of the Congo", "region": "Central Africa", "coast": true, "equator": true, "island": false}, {"name": "Equatorial Guinea", "region": "Central Africa", "coast": true, "equator": false, "island": false}, {"name": "Gabon", "region": "Central Africa", "coast": true, "equator": true, "island": false}, {"name": "Republic of the Congo", "region": "Central Africa", "coast": true, "equator": true, "island": false}, {"name": "São Tomé and Príncipe", "region": "Central Africa", "coast": true, "equator": true, "island": true}, {"name": "Burundi", "region": "East Africa", "coast": false, "equator": false, "island": false}, {"name": "Comoros", "region": "East Africa", "coast": true, "equator": false, "island": true}, {"name": "Djibouti", "region": "East Africa", "coast": true, "equator": false, "island": false}, {"name": "Eritrea", "region": "East Africa", "coast": true, "equator": false, "island": false}, {"name": "Ethiopia", "region": "East Africa", "coast": false, "equator": false, "island": false}, {"name": "Kenya", "region": "East Africa", "coast": true, "equator": true, "island": false}, {"name": "Madagascar", "region": "East Africa", "coast": true, "equator": false, "island": true}, {"name": "Malawi", "region": "East Africa", "coast": false, "equator": false, "island": false}, {"name": "Mauritius", "region": "East Africa", "coast": true, "equator": false, "island": true}, {"name": "Mozambique", "region": "East Africa", "coast": true, "equator": false, "island": false}, {"name": "Rwanda", "region": "East Africa", "coast": false, "equator": false, "island": false}, {"name": "Seychelles", "region": "East Africa", "coast": true, "equator": false, "island": true}, {"name": "Somalia", "region": "East Africa", "coast": true, "equator": true, "island": false}, {"name": "South Sudan", "region": "East Africa", "coast": false, "equator": false, "island": false}, {"name": "Tanzania", "region": "East Africa", "coast": true, "equator": false, "island": false}, {"name": "Uganda", "region": "East Africa", "coast": false, "equator": true, "island": false}, {"name": "Botswana", "region": "Southern Africa", "coast": false, "equator": false, "island": false}, {"name": "Eswatini", "region": "Southern Africa", "coast": false, "equator": false, "island": false}, {"name": "Lesotho", "region": "Southern Africa", "coast": false, "equator": false, "island": false}, {"name": "Namibia", "region": "Southern Africa", "coast": true, "equator": false, "island": false}, {"name": "South Africa", "region": "Southern Africa", "coast": true, "equator": false, "island": false}, {"name": "Zambia", "region": "Southern Africa", "coast": false, "equator": false, "island": false}, {"name": "Zimbabwe", "region": "Southern Africa", "coast": false, "equator": false, "island": false}];
+const regions=Object.keys(countries.reduce((a,c)=>(a[c.region]=1,a),{}));
+let deck=[],idx=0,score=0,mode='mixed',answered=false;
+const $=id=>document.getElementById(id);
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function pick(arr,n){return shuffle(arr).slice(0,n)}
+function q(question,answer,options,explain){return {question,answer,options:shuffle([answer,...options.filter(x=>x!==answer).slice(0,3)]),explain}}
+function countryRegion(c){return q(`In which African region is <b>${c.name}</b> located?`,c.region,regions.filter(x=>x!==c.region),`${c.name} is in ${c.region}.`)}
+function build(m){
+ if(m==='regions') return shuffle(countries).map(countryRegion);
+ if(m==='coast') return shuffle(countries).map(c=>q(`Does <b>${c.name}</b> have a coastline?`,c.coast?'Coastal country':'Landlocked country',['Coastal country','Landlocked country'],c.coast?`${c.name} has a coastline.`:`${c.name} is landlocked; it has no coastline.`));
+ if(m==='equator') return shuffle(countries).flatMap(c=>[
+ q(`Does the Equator cross <b>${c.name}</b>?`,c.equator?'Yes':'No',['Yes','No'],c.equator?`The Equator crosses ${c.name}.`:`The Equator does not cross ${c.name}.`)
+ ]).slice(0,25);
+ if(m==='oceans') return [
+ q('Which ocean lies to the west of Africa?','Atlantic Ocean',['Indian Ocean','Pacific Ocean','Arctic Ocean'],'The Atlantic Ocean is west of Africa.'),
+ q('Which ocean lies to the east of Africa?','Indian Ocean',['Atlantic Ocean','Pacific Ocean','Southern Ocean'],'The Indian Ocean is east of Africa.'),
+ q('Which sea lies north of Africa?','Mediterranean Sea',['Red Sea','Caribbean Sea','Arabian Sea'],'The Mediterranean Sea is north of Africa, between Africa and Europe.'),
+ q('Which sea lies northeast of Africa?','Red Sea',['Black Sea','Baltic Sea','Coral Sea'],'The Red Sea lies northeast of Africa, between northeast Africa and the Arabian Peninsula.'),
+ q('Which imaginary line crosses central Africa?','Equator',['Prime Meridian','Tropic of Capricorn','Arctic Circle'],'The Equator crosses central Africa.'),
+ q('Which continent is directly north of Africa across the Mediterranean Sea?','Europe',['Asia','South America','Australia'],'Europe lies north of Africa, across the Mediterranean Sea.'),
+ q('Africa is mainly located in which two hemispheres?','Northern and Southern',['Eastern and Western only','Northern only','Southern only'],'The Equator crosses Africa, so the continent lies in both the Northern and Southern Hemispheres.')
+ ];
+ let base=[
+ q('What is a country?','An area of land with its own government',['A large ocean','A line on a map','A type of mountain'],'A country is a political area with its own government.'),
+ q('What is a border?','A boundary between countries',['The middle of an ocean','A mountain peak','A capital city'],'Borders separate the territories of countries.'),
+ q('What does landlocked mean?','A country has no coastline',['A country is surrounded by ocean','A country has many beaches','A country is an island'],'A landlocked country has no direct coastline.'),
+ q('Which statement about Madagascar is correct?','It is a country and an island',['It is a city in Kenya','It is a sea','It is part of South Africa'],'Madagascar is an island country off southeast Africa in the Indian Ocean.'),
+ q('Zanzibar is best described as…','An island group that is part of Tanzania',['An independent country','A country in West Africa','A sea north of Africa'],'Zanzibar is part of Tanzania, off its coast in the Indian Ocean.'),
+ ...pick(countries,10).map(countryRegion),
+ ...pick(countries,8).map(c=>q(`Is <b>${c.name}</b> landlocked or coastal?`,c.coast?'Coastal':'Landlocked',['Coastal','Landlocked'],c.coast?`${c.name} has a coastline.`:`${c.name} has no coastline.`)),
+ ...pick(countries,5).map(c=>q(`Does the Equator cross <b>${c.name}</b>?`,c.equator?'Yes':'No',['Yes','No'],c.equator?`Yes, the Equator crosses ${c.name}.`:`No, the Equator does not cross ${c.name}.`))
+ ];
+ return shuffle(base);
+}
+function start(m){mode=m;deck=build(m);idx=0;score=0;$('score').textContent=0;$('progress').textContent=0;$('feedback').textContent='Choose the best answer.';$('next').classList.add('hide');render()}
+function render(){
+ answered=false;let item=deck[idx];$('question').innerHTML=item.question;$('choices').innerHTML='';
+ item.options.forEach(opt=>{let b=document.createElement('button');b.textContent=opt;b.onclick=()=>answer(opt,b);$('choices').appendChild(b)});
+ $('progress').textContent=`${idx+1} / ${deck.length}`;$('bar').style.width=(idx/deck.length*100)+'%';$('feedback').textContent='Select one answer.';
+}
+function answer(opt,btn){
+ if(answered)return;answered=true;let item=deck[idx];let ok=opt===item.answer;
+ if(ok){score++;$('score').textContent=score;btn.classList.add('correct');$('feedback').textContent='Correct! '+item.explain}
+ else{btn.classList.add('wrong');[...$('choices').children].forEach(b=>{if(b.textContent===item.answer)b.classList.add('correct')});$('feedback').textContent='Not quite. Correct answer: '+item.answer+'. '+item.explain}
+ [...$('choices').children].forEach(b=>b.disabled=true);
+ let best=Number(localStorage.getItem('africaBest')||0);if(score>best){best=score;localStorage.setItem('africaBest',best)}$('best').textContent=best;$('next').textContent=idx===deck.length-1?'See results':'Next question →';$('next').classList.remove('hide');
+}
+function nextQ(){if(idx<deck.length-1){idx++;render();$('next').classList.add('hide')}else{$('question').innerHTML=`Round complete! You scored ${score} out of ${deck.length}.`;$('choices').innerHTML='';$('feedback').textContent=score>=deck.length*.8?'Excellent work! Keep practising to master Africa’s geography.':'Good effort! Review the explanations and try again.';$('next').textContent='Play again';$('next').onclick=()=>start(mode);$('next').classList.remove('hide');$('bar').style.width='100%';$('progress').textContent=`${deck.length} / ${deck.length}`}}
+function showCountries(){$('directory').classList.toggle('hide');$('countrylist').innerHTML=Object.entries(countries.reduce((a,c)=>{(a[c.region]??=[]).push(c);return a},{})).map(([r,cs])=>`<h3>${r}</h3><div class="country-grid">${cs.sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<div class="country"><span>${c.name}</span><span class="pill">${c.coast?'Coast':'Landlocked'}</span></div>`).join('')}</div>`).join('')}
+$('best').textContent=localStorage.getItem('africaBest')||0;
+</script></body></html>
